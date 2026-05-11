@@ -1,0 +1,42 @@
+{
+  "name": "tokenwise",
+  "owner": {
+    "name": "CodeShuX",
+    "url": "https://github.com/CodeShuX"
+  },
+  "metadata": {
+    "description": "TokenWise — measurement-driven model router for Claude Code. Routes work to Haiku/Sonnet, reserves Opus for synthesis, proves savings on your real workload.",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "tokenwise",
+      "source": "./",
+      "description": "Measurement-driven model router for Claude Code. Routes subtasks to Haiku/Sonnet for grunt work, reserves Opus for synthesis, logs token usage per task class to a local NDJSON, and proves savings via on-demand A/B tests. Auto-detects whether routing/env-var primitives work on your Claude Code build before configuring.",
+      "version": "0.1.0",
+      "author": {
+        "name": "CodeShuX",
+        "url": "https://github.com/CodeShuX"
+      },
+      "homepage": "https://github.com/CodeShuX/tokenwise",
+      "repository": "https://github.com/CodeShuX/tokenwise",
+      "license": "MIT",
+      "category": "productivity",
+      "tags": [
+        "claude-code",
+        "anthropic",
+        "model-routing",
+        "token-optimization",
+        "cost-reduction",
+        "haiku",
+        "sonnet",
+        "opus",
+        "subagents",
+        "measurement"
+      ],
+      "skills": [
+        "./skill/SKILL.md"
+      ]
+    }
+  ]
+}
