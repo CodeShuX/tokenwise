@@ -13,9 +13,9 @@ claude --version
 If you're on an affected build, options:
 - Update Claude Code: `claude update` (or your package manager's equivalent)
 - Pin to a known-good version (community has reported v2.0.85+ working)
-- Run `/tokenwise install --manual` — TokenWise will print the config block without writing, and the routing will work at the orchestrator-prompt level even if the SDK primitive is broken
+- Run `/tokenwise:install --manual` — TokenWise will print the config block without writing, and the routing will work at the orchestrator-prompt level even if the SDK primitive is broken
 
-**2. Probe timeout.** Slow network or busy Anthropic API. Retry: `/tokenwise install --retry-probe`.
+**2. Probe timeout.** Slow network or busy Anthropic API. Retry: `/tokenwise:install --retry-probe`.
 
 ## "Env-var probe failed"
 
@@ -26,7 +26,7 @@ This isn't fatal — TokenWise will still install routing rules. It just won't a
 Override:
 
 ```
-/tokenwise install --skip-env-probe
+/tokenwise:install --skip-env-probe
 ```
 
 ## "Cannot find ~/.claude/CLAUDE.md"
@@ -35,7 +35,7 @@ TokenWise creates a project-level `./CLAUDE.md` if neither global nor project fi
 
 ```bash
 touch ~/.claude/CLAUDE.md
-/tokenwise install
+/tokenwise:install
 ```
 
 ## "TokenWise wrote to CLAUDE.md but routing doesn't seem to work"
@@ -50,7 +50,7 @@ Three quick checks:
    ```
 3. **Test routing manually:**
    ```
-   /tokenwise probe
+   /tokenwise:probe
    ```
    This spawns a probe subagent at each tier and reports back. If all three tiers return their expected model identifier, routing works.
 
@@ -82,12 +82,12 @@ Don't uninstall — just comment out the routing block:
 sed -i.bak 's|^## Model routing (TokenWise)|<!-- DISABLED: ## Model routing (TokenWise)|' ~/.claude/CLAUDE.md
 ```
 
-Re-enable: revert from `.bak`. Or use `/tokenwise undo` to restore the original.
+Re-enable: revert from `.bak`. Or use `/tokenwise:undo` to restore the original.
 
 ## "I want to switch back to all-Opus"
 
 ```
-/tokenwise undo
+/tokenwise:undo
 ```
 
 Pick the backup from before install. Done. The router instructions are no longer in CLAUDE.md, so Claude Code reverts to default Opus behavior.

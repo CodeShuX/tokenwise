@@ -96,4 +96,4 @@ In v0.1.0, pattern is a substring match. In v0.2, glob + regex support.
 
 ## When the taxonomy is wrong
 
-Run `/tokenwise ab "<task>"` on a representative example. The A/B report tells you which tier was actually sufficient. Update the override list based on real data, not intuition.
+Run `/tokenwise:ab "<task>"` on a representative example. The A/B report tells you which tier was actually sufficient. Update the override list based on real data, not intuition.

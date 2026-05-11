@@ -37,9 +37,9 @@ Secondary: power users who want a programmable routing layer they can extend.
 
 1. **Router** — Opus orchestrator delegates to Haiku/Sonnet subagents based on task taxonomy
 2. **Measurement** — every subagent spawn logged with tokens-per-task-class to `.tokenwise/log.ndjson`
-3. **A/B-test mode** — `/tokenwise ab <task>` runs the same task at multiple tiers, diffs outputs, reports cost+quality
+3. **A/B-test mode** — `/tokenwise:ab <task>` runs the same task at multiple tiers, diffs outputs, reports cost+quality
 4. **Config installer** — guided (auto-write with diff preview) or manual (print-and-exit) — installs routing rules + env vars
-5. **Reports** — `/tokenwise report` (session), `/tokenwise summary --week` (trend), `/tokenwise undo` (restore)
+5. **Reports** — `/tokenwise:report` (session), `/tokenwise:summary --week` (trend), `/tokenwise:undo` (restore)
 6. **Real-time cost ticker** — optional running $ counter, toggleable
 7. **Budget cap** — alert when session crosses configured threshold
 8. **Prompt-cache hint detector** — flag re-reads of same file as cache-eligible
@@ -69,7 +69,7 @@ Secondary: power users who want a programmable routing layer they can extend.
 
 ### Phase 1 — Detect
 
-When the user invokes `/tokenwise install`:
+When the user invokes `/tokenwise:install`:
 - Scan for `~/.claude/CLAUDE.md`, project `CLAUDE.md`, `~/.claude/settings.json`
 - Detect Claude Code version (run `claude --version`)
 - Test whether `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE` actually works on this build (set, read back, verify)
@@ -99,7 +99,7 @@ Auto-detect mode preference from user signals:
 - Existing custom hooks/skills → likely power user → default to manual with override
 - Clean config → default to guided
 
-The user can always force a mode: `/tokenwise install --guided` or `--manual`.
+The user can always force a mode: `/tokenwise:install --guided` or `--manual`.
 
 ### Phase 3 — Measure
 
@@ -126,7 +126,7 @@ Logging is append-only, no PII, no remote send.
 
 ### Phase 4 — A/B test
 
-`/tokenwise ab <task description>` does:
+`/tokenwise:ab <task description>` does:
 1. Runs the same task on Haiku, Sonnet, and (optionally) Opus
 2. Captures outputs verbatim
 3. Diffs outputs structurally (token-level + semantic comparison)
@@ -139,9 +139,9 @@ Useful for users to validate "is Haiku really good enough for my codebase?" befo
 
 Three subcommands:
 
-- `/tokenwise report` — current session: tokens per model, $ saved vs all-Opus, task-class breakdown, escalations, quality flags
-- `/tokenwise summary --week` (or `--month`, `--all`) — historical trend across `.tokenwise/log.ndjson`
-- `/tokenwise undo` — list backups, restore one in place
+- `/tokenwise:report` — current session: tokens per model, $ saved vs all-Opus, task-class breakdown, escalations, quality flags
+- `/tokenwise:summary --week` (or `--month`, `--all`) — historical trend across `.tokenwise/log.ndjson`
+- `/tokenwise:undo` — list backups, restore one in place
 
 ---
 

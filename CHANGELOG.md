@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.1.1] — 2026-05-11
+
+### Fixed
+- **Plugin structure** — added required `.claude-plugin/plugin.json` manifest. Without it, Claude Code did not register TokenWise as a plugin contributing skills, and slash commands were silently unavailable.
+- **Skills directory layout** — moved from single `skill/SKILL.md` to canonical `skills/<name>/SKILL.md` per-skill structure required by Claude Code's plugin loader.
+- **Slash command form** — commands are now correctly namespaced: `/tokenwise:install`, `/tokenwise:report`, `/tokenwise:summary`, `/tokenwise:ab`, `/tokenwise:undo`. Previous docs incorrectly described `/tokenwise install` (space-separated, which Claude Code parses as a skill called `tokenwise` with arguments `install`).
+- **Frontmatter** — dropped non-canonical `name:` and `user_invocable:` fields; kept canonical `description:`.
+
+### Changed
+- Each subcommand is now its own skill file (`skills/install/`, `skills/report/`, `skills/summary/`, `skills/ab/`, `skills/undo/`) so each is independently discoverable via `/help`.
+
 ## [0.1.0] — 2026-05-11
 
 ### Added
