@@ -1,0 +1,12 @@
+{
+  "name": "tokenwise",
+  "description": "Measurement-driven model router for Claude Code. Routes Haiku/Sonnet/Opus, measures real dollars saved per session.",
+  "version": "0.1.1",
+  "author": {
+    "name": "CodeShuX",
+    "url": "https://github.com/CodeShuX"
+  },
+  "homepage": "https://github.com/CodeShuX/tokenwise",
+  "repository": "https://github.com/CodeShuX/tokenwise",
+  "license": "MIT"
+}

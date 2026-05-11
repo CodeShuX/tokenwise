@@ -42,7 +42,7 @@ The community has built workarounds. They fall into two camps:
 
 TokenWise is the third option: **route + measure + prove**.
 
-Every routed task is logged to `.tokenwise/log.ndjson` with real token counts and cost numbers. `/tokenwise report` shows what you actually spent vs. what you'd have spent at all-Opus. `/tokenwise ab "<task>"` runs the same task on Haiku and Sonnet, diffs the outputs, and tells you whether the cheaper tier was good enough.
+Every routed task is logged to `.tokenwise/log.ndjson` with real token counts and cost numbers. `/tokenwise:report` shows what you actually spent vs. what you'd have spent at all-Opus. `/tokenwise:ab "<task>"` runs the same task on Haiku and Sonnet, diffs the outputs, and tells you whether the cheaper tier was good enough.
 
 You don't trust the savings. You verify them.
 
@@ -55,8 +55,8 @@ Five phases:
 1. **Detect** — Scans your Claude Code config, runs probes for known routing bugs ([#36381](https://github.com/anthropics/claude-code/issues/36381), [#47488](https://github.com/anthropics/claude-code/issues/47488)). Refuses to install if routing is broken on your build.
 2. **Configure** — Guided mode shows a diff and asks before every write, with automatic backups. Manual mode prints copy-paste blocks and exits. You pick.
 3. **Measure** — Every routed subagent appends one NDJSON line to `.tokenwise/log.ndjson` with token counts, costs, escalations, durations. All local. Zero telemetry.
-4. **A/B test** — `/tokenwise ab "<task>"` runs the same task on multiple tiers, diffs outputs, scores quality, writes a report. Use this to validate "is Haiku really good enough for my codebase?" before you trust the router.
-5. **Report** — `/tokenwise report` (this session), `/tokenwise summary --week` (trend), `/tokenwise undo` (restore config from backup).
+4. **A/B test** — `/tokenwise:ab "<task>"` runs the same task on multiple tiers, diffs outputs, scores quality, writes a report. Use this to validate "is Haiku really good enough for my codebase?" before you trust the router.
+5. **Report** — `/tokenwise:report` (this session), `/tokenwise:summary --week` (trend), `/tokenwise:undo` (restore config from backup).
 
 The router classifies tasks into three tiers:
 
@@ -91,7 +91,7 @@ In any Claude Code session, run:
 Then in a fresh session:
 
 ```
-/tokenwise install
+/tokenwise:install
 ```
 
 TokenWise will detect your config, show a diff of proposed changes, and ask for confirmation before writing anything.
@@ -116,7 +116,7 @@ Verify either way by typing `/tokenwise` in any Claude Code session.
 ### First-time setup
 
 ```
-/tokenwise install
+/tokenwise:install
 ```
 
 TokenWise will:
@@ -129,13 +129,13 @@ TokenWise will:
 If you'd rather copy-paste than have TokenWise write your config:
 
 ```
-/tokenwise install --manual
+/tokenwise:install --manual
 ```
 
 Preview without writing anything:
 
 ```
-/tokenwise install --dry-run
+/tokenwise:install --dry-run
 ```
 
 ### Daily use
@@ -145,15 +145,15 @@ After install, **nothing changes in your workflow**. Just use Claude Code normal
 When you want to see savings:
 
 ```
-/tokenwise report          # this session
-/tokenwise summary --week  # last 7 days
-/tokenwise summary --all   # everything in the log
+/tokenwise:report          # this session
+/tokenwise:summary --week  # last 7 days
+/tokenwise:summary --all   # everything in the log
 ```
 
 When you want to validate the router on a specific task:
 
 ```
-/tokenwise ab "rename all uses of getCwd to getCurrentWorkingDirectory across the codebase"
+/tokenwise:ab "rename all uses of getCwd to getCurrentWorkingDirectory across the codebase"
 ```
 
 TokenWise runs the task on Haiku and Sonnet separately, diffs the outputs, scores them, and writes `tokenwise-ab-<timestamp>.md` to your project root.
@@ -161,7 +161,7 @@ TokenWise runs the task on Haiku and Sonnet separately, diffs the outputs, score
 When you want to undo TokenWise's config changes:
 
 ```
-/tokenwise undo
+/tokenwise:undo
 ```
 
 Lists all `.tokenwise-backup-*` files and lets you restore one.
@@ -267,9 +267,9 @@ Only the ones you explicitly approve at install time:
 - `~/.claude/CLAUDE.md` (or project `./CLAUDE.md` — you pick)
 - `~/.claude/settings.json` (only if the env-var probe passes)
 
-Every write requires `[Y/n]` confirmation. Every original is backed up to `<file>.tokenwise-backup-<timestamp>`. `/tokenwise undo` restores in one command.
+Every write requires `[Y/n]` confirmation. Every original is backed up to `<file>.tokenwise-backup-<timestamp>`. `/tokenwise:undo` restores in one command.
 
-If you'd rather not have TokenWise touch your files at all, run `/tokenwise install --manual` — it prints copy-paste blocks and exits without writing anything.
+If you'd rather not have TokenWise touch your files at all, run `/tokenwise:install --manual` — it prints copy-paste blocks and exits without writing anything.
 
 ### What about prompt caching?
 
@@ -283,7 +283,7 @@ No. TokenWise is Claude-Code-specific by design. If you need cross-vendor routin
 
 Two things:
 1. **Safety caps** — if Haiku realizes a task needs more reasoning, it returns to the parent (Opus) without escalating on its own. The parent re-classifies and retries at a higher tier. The escalation is logged so you can see how often it happens.
-2. **A/B test mode** — `/tokenwise ab "<task>"` runs the same task on multiple tiers and scores them. If you're nervous about Haiku for some task class, run the A/B once and see.
+2. **A/B test mode** — `/tokenwise:ab "<task>"` runs the same task on multiple tiers and scores them. If you're nervous about Haiku for some task class, run the A/B once and see.
 
 The most common escalation pattern is `Haiku → Sonnet` for tasks involving more than 2 file dependencies. That's worth knowing — and TokenWise tells you.
 
@@ -311,7 +311,7 @@ TokenWise doesn't replace any of these. It fills the gap they don't cover: "is m
 
 **v0.2** (planned)
 - Pre-task cost estimator
-- GitHub Action — run `/tokenwise report` on PR previews, comment savings
+- GitHub Action — run `/tokenwise:report` on PR previews, comment savings
 - Multi-month digest with trend lines
 - YAML-editable routing taxonomy (override the defaults for your codebase)
 

@@ -2,19 +2,19 @@
 
 The whole point of TokenWise is that you don't have to trust the router — you can verify it.
 
-`/tokenwise ab "<task>"` runs the same task on multiple tiers, captures outputs, scores them, and writes a comparison report.
+`/tokenwise:ab "<task>"` runs the same task on multiple tiers, captures outputs, scores them, and writes a comparison report.
 
 ## When to A/B
 
 - **Onboarding TokenWise to a new codebase.** Run 3-5 A/B tests on representative tasks. The results tell you which tier is actually sufficient *for your code*.
 - **Calibrating an override.** Before adding a `tokenwise.overrides` rule to your CLAUDE.md, A/B the task class.
 - **Anthropic releases a new model.** Re-A/B your common task classes to see if the routing tiers should shift.
-- **Suspecting over-escalation.** If `/tokenwise report` shows lots of Haiku → Sonnet escalations on the same task class, A/B that class to see if Sonnet was actually needed.
+- **Suspecting over-escalation.** If `/tokenwise:report` shows lots of Haiku → Sonnet escalations on the same task class, A/B that class to see if Sonnet was actually needed.
 
 ## What `ab` does
 
 ```
-/tokenwise ab "<task description>" [--tiers haiku,sonnet,opus]
+/tokenwise:ab "<task description>" [--tiers haiku,sonnet,opus]
 ```
 
 Steps:
@@ -64,7 +64,7 @@ A typical report:
 You suspect Haiku is good enough for "find unused exports across the codebase":
 
 ```
-/tokenwise ab "find all unused exports in src/ and list them in a markdown table"
+/tokenwise:ab "find all unused exports in src/ and list them in a markdown table"
 ```
 
 Report says: `Haiku 9/10, Sonnet 9/10`. Same output, 5× cheaper.
