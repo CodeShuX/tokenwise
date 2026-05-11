@@ -1,0 +1,20 @@
+# Local logs
+.tokenwise/
+*.tokenwise-backup-*
+
+# Launch drafts (local only)
+.launch/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*~
+
+# Node (if we add tooling later)
+node_modules/
+*.log
