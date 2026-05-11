@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>TokenWise — social preview</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;600;800;900&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    width: 1280px;
+    height: 640px;
+    background: #0a0e1a;
+    font-family: 'Inter', system-ui, sans-serif;
+    color: #e8eef9;
+    overflow: hidden;
+  }
+
+  .bg-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(110, 168, 254, 0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(110, 168, 254, 0.06) 1px, transparent 1px);
+    background-size: 40px 40px;
+    mask-image: radial-gradient(ellipse at center, black 0%, transparent 70%);
+  }
+
+  .accent-glow {
+    position: absolute;
+    width: 700px;
+    height: 700px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(74, 222, 128, 0.18) 0%, transparent 60%);
+    top: -200px;
+    right: -200px;
+    filter: blur(40px);
+  }
+
+  .accent-glow-2 {
+    position: absolute;
+    width: 500px;
+    height: 500px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(110, 168, 254, 0.10) 0%, transparent 60%);
+    bottom: -150px;
+    left: -100px;
+    filter: blur(40px);
+  }
+
+  .container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    padding: 64px 72px;
+    z-index: 2;
+  }
+
+  .left {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 28px;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: rgba(74, 222, 128, 0.12);
+    border: 1px solid rgba(74, 222, 128, 0.35);
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #4ade80;
+    width: fit-content;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.5px;
+  }
+
+  .badge::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #4ade80;
+    box-shadow: 0 0 8px #4ade80;
+  }
+
+  .wordmark {
+    font-size: 92px;
+    font-weight: 900;
+    letter-spacing: -3px;
+    line-height: 0.95;
+    background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .tagline {
+    font-size: 22px;
+    font-weight: 500;
+    color: #94a3b8;
+    line-height: 1.4;
+    max-width: 480px;
+  }
+
+  .tagline strong {
+    color: #4ade80;
+    font-weight: 700;
+  }
+
+  .footer {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 8px;
+  }
+
+  .footer-pill {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: #6ea8fe;
+    background: rgba(110, 168, 254, 0.08);
+    border: 1px solid rgba(110, 168, 254, 0.2);
+    padding: 6px 12px;
+    border-radius: 8px;
+  }
+
+  .right {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .terminal {
+    width: 100%;
+    background: #0f1525;
+    border: 1px solid rgba(110, 168, 254, 0.18);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.5);
+  }
+
+  .terminal-bar {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 12px 16px;
+    background: #131a2d;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+
+  .dot { width: 11px; height: 11px; border-radius: 50%; }
+  .dot.red { background: #ff5f56; }
+  .dot.yellow { background: #ffbd2e; }
+  .dot.green { background: #27c93f; }
+
+  .terminal-title {
+    margin-left: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: #6a7390;
+  }
+
+  .terminal-body {
+    padding: 22px 24px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    line-height: 1.7;
+  }
+
+  .prompt { color: #6ea8fe; }
+  .cmd { color: #e8eef9; }
+  .row { display: flex; justify-content: space-between; align-items: center; }
+  .label { color: #94a3b8; }
+  .haiku { color: #4ade80; }
+  .sonnet { color: #facc15; }
+  .opus { color: #f87171; }
+  .total { color: #e8eef9; font-weight: 700; }
+  .saved { color: #4ade80; font-weight: 700; }
+  .strike { text-decoration: line-through; color: #6a7390; }
+  .divider { color: #2a3656; margin: 8px 0; }
+</style>
+</head>
+<body>
+  <div class="bg-grid"></div>
+  <div class="accent-glow"></div>
+  <div class="accent-glow-2"></div>
+
+  <div class="container">
+    <div class="left">
+      <div class="badge">CLAUDE CODE · SKILL</div>
+      <div class="wordmark">TokenWise</div>
+      <div class="tagline">
+        Cut your Claude Code spend by <strong>80%</strong>.<br/>
+        Measured on your real work — not a marketing claim.
+      </div>
+      <div class="footer">
+        <div class="footer-pill">/plugin install</div>
+        <div class="footer-pill">MIT</div>
+        <div class="footer-pill">github.com/CodeShuX/tokenwise</div>
+      </div>
+    </div>
+
+    <div class="right">
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="dot red"></div>
+          <div class="dot yellow"></div>
+          <div class="dot green"></div>
+          <div class="terminal-title">~ /tokenwise report</div>
+        </div>
+        <div class="terminal-body">
+          <div class="row"><span class="label">47 tasks · 2h 14m</span></div>
+          <div class="divider">────────────────────────</div>
+          <div class="row"><span class="haiku">Haiku</span><span class="cmd">32 tasks · $1.62</span></div>
+          <div class="row"><span class="sonnet">Sonnet</span><span class="cmd">12 tasks · $2.06</span></div>
+          <div class="row"><span class="opus">Opus</span><span class="cmd">3 tasks · $1.43</span></div>
+          <div class="divider">────────────────────────</div>
+          <div class="row"><span class="label">Total</span><span class="total">$5.11</span></div>
+          <div class="row"><span class="label">Baseline</span><span class="strike">$24.93</span></div>
+          <div class="row"><span class="label">Saved</span><span class="saved">$19.82 · 79.5%</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
