@@ -6,14 +6,14 @@
   },
   "metadata": {
     "description": "TokenWise — measurement-driven model router for Claude Code. Classifies every task by type and routes it automatically: mechanical→Haiku, execution→Sonnet, review→Opus, planning→Fable. Measures real dollars saved per session.",
-    "version": "0.1.1"
+    "version": "0.2.0"
   },
   "plugins": [
     {
       "name": "tokenwise",
       "source": "./",
       "description": "Measurement-driven model router for Claude Code. Classifies every subtask by type and routes it automatically — mechanical work to Haiku, execution to Sonnet, review to Opus, large planning to Fable — with no per-task prompts, logs token usage per task class to a local NDJSON, and proves savings via on-demand A/B tests. Auto-detects whether routing/env-var primitives work on your Claude Code build before configuring. Exposes /tokenwise:install, /tokenwise:report, /tokenwise:summary, /tokenwise:ab, /tokenwise:undo.",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "author": {
         "name": "CodeShuX",
         "url": "https://github.com/CodeShuX"

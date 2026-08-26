@@ -182,7 +182,7 @@ tokenwise:
 ```
 
 In v0.1.0, pattern is a substring match; `tier` is the model name
-(`haiku`/`sonnet`/`opus`/`fable`). In v0.2, glob + regex support.
+(`haiku`/`sonnet`/`opus`/`fable`). In v0.3, glob + regex support.
 
 ## When the taxonomy is wrong
 

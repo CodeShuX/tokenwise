@@ -2,7 +2,7 @@
 
 > A Claude Code skill that routes work to the cheapest model that can handle it, measures actual savings on your real workload, and proves the routing didn't hurt quality.
 
-**Status:** locked v0.1.0 spec. Source of truth — features outside this doc are out of scope until v0.2.
+**Status:** locked v0.1.0 spec. Source of truth — features outside this doc are out of scope until added via a dated amendment (§11) or a new spec version.
 
 ---
 
@@ -45,7 +45,7 @@ Secondary: power users who want a programmable routing layer they can extend.
 8. **Context-window watcher** — alert at 70%/85%/95% of context
 9. **Privacy-first** — zero telemetry, all logs local
 
-### Out of scope (deferred to v0.2+)
+### Out of scope (deferred to v0.3+)
 
 - Cost-per-task pre-estimator
 - GitHub Action that comments savings on PRs
@@ -251,12 +251,13 @@ tokenwise/
 ## 9. Versioning
 
 - v0.1.0 — this spec
-- v0.2 — pre-task cost estimator, GitHub Action, multi-month digest
+- v0.2.0 — Fable 5 as a 4th automatic routing tier (Planning); see §11 amendment
+- v0.3 — pre-task cost estimator, GitHub Action, multi-month digest, budget cap
 - v1.0 — workload profiles (a user can save "my-Rails-app" taxonomy as a profile and share it)
 
 Per-skill decisions to revisit:
 - Whether the auto-config writer should be opt-in instead of default-guided
-- Whether to expose the routing taxonomy as user-editable YAML (likely yes in v0.2)
+- Whether to expose the routing taxonomy as user-editable YAML (likely yes in v0.3)
 
 ---
 
@@ -283,7 +284,7 @@ Anthropic shipped Claude Fable 5 ($10/$50 per 1M tokens, 2× Opus) as its top-of
 
 The input-size bump (`>30k tokens` → next more capable model) still exists but now reads as a same-lane capability bump (Haiku→Sonnet, Sonnet→Opus) rather than a cost-tier bump; it still stops at Opus, and Fable is reached by task type only, never input size — this is what keeps Fable rare without needing a confirmation gate.
 
-Cost safety is a one-time pricing notice printed at the end of `/tokenwise:install`, not a per-task prompt — the formal "Budget cap" scope item (§3) was already an unfulfilled promise in this locked spec (in-scope since v0.1.0, never specified in any skill file) and is now explicitly deferred to v0.2 rather than left dangling.
+Cost safety is a one-time pricing notice printed at the end of `/tokenwise:install`, not a per-task prompt — the formal "Budget cap" scope item (§3) was already an unfulfilled promise in this locked spec (in-scope since v0.1.0, never specified in any skill file) and is now explicitly deferred to v0.3 rather than left dangling.
 
 **Report/summary consequence (unchanged):** `cost_baseline_usd` stays pinned to Opus (the all-Opus baseline). A Planning (Fable) log line therefore has `savings_usd < 0` — that's expected, not a bug. It means the task cost more than the baseline because it genuinely needed more than Opus could give it. `/tokenwise:report` and `/tokenwise:summary` must render negative savings as-is (a `-$` line), not clamp to zero.
 

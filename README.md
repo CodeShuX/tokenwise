@@ -320,11 +320,14 @@ TokenWise doesn't replace any of these. It fills the gap they don't cover: "is m
 
 ## Roadmap
 
-**v0.2** (planned)
+**v0.2** (shipped) — Fable 5 as a 4th automatic routing tier (Planning), symmetric 4-way task-type classification, reclassification model replacing ladder escalation. See [CHANGELOG](./CHANGELOG.md).
+
+**v0.3** (planned)
 - Pre-task cost estimator
 - GitHub Action — run `/tokenwise:report` on PR previews, comment savings
 - Multi-month digest with trend lines
 - YAML-editable routing taxonomy (override the defaults for your codebase)
+- Budget cap — alert when session crosses a configured $ threshold
 
 **v1.0** (later)
 - Workload profiles — save "my-Rails-app" taxonomy as a sharable profile
