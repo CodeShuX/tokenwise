@@ -1,5 +1,5 @@
 ---
-description: Run an A/B test of the same task at multiple model tiers (Haiku, Sonnet, optionally Opus). Captures outputs, computes structural and semantic diffs, scores quality, writes a markdown comparison report. Use when the user wants to validate "is Haiku good enough for this task class?" or runs /tokenwise:ab "<task description>".
+description: Run an A/B test of the same task at multiple model tiers (Haiku, Sonnet, optionally Opus and Fable). Captures outputs, computes structural and semantic diffs, scores quality, writes a markdown comparison report. Use when the user wants to validate "is Haiku good enough for this task class?" or runs /tokenwise:ab "<task description>".
 ---
 
 # /tokenwise:ab — A/B test a task across model tiers
@@ -8,11 +8,12 @@ Run the same task at multiple tiers and compare outputs.
 
 ## Parse $ARGUMENTS
 
-Expected form: `<task description> [--tiers haiku,sonnet,opus]`
+Expected form: `<task description> [--tiers haiku,sonnet,opus,fable]`
 
 - The task description is everything before the first `--` flag (or the whole string if no flags)
-- `--tiers haiku,sonnet` is the default (skip Opus by default — it's the baseline)
-- `--tiers haiku,sonnet,opus` runs all three
+- `--tiers haiku,sonnet` is the default (skip Opus and Fable by default — Opus is the baseline, Fable is the priciest lane)
+- `--tiers haiku,sonnet,opus` runs the three cheaper tiers
+- `--tiers ...,fable` adds Fable — useful for calibrating the Planning lane (e.g. checking whether a task class really needs it, or whether an override pinning it to `sonnet`/`opus` is good enough). Since Fable costs 2× Opus, the cost-confirm step below should flag it
 
 If `$ARGUMENTS` is empty, ask the user:
 > What task should I A/B test? Provide a task description (e.g., "rename getCwd to getCurrentWorkingDirectory across the codebase").
@@ -26,6 +27,7 @@ If `$ARGUMENTS` is empty, ask the user:
    Proceed? [Y/n]
    ```
    Estimate by treating the task as ~10k input + ~1k output per tier and summing.
+   If `fable` is in `--tiers`, add one line before the prompt: `Note: fable is ~2x Opus's rate and will dominate this estimate.`
 
 2. **For each tier:**
    - Spawn a Task at that tier: `Task(description: <task>, subagent_type: "general-purpose", model: <tier>, prompt: <task>)`
@@ -41,6 +43,7 @@ If `$ARGUMENTS` is empty, ask the user:
 
 4. **Compute cost per tier:**
    - Use the same pricing as `/tokenwise:report`:
+     - Fable 5: $10 input / $50 output per 1M tokens
      - Opus 4.7: $5 input / $25 output per 1M tokens
      - Sonnet 4.6: $3 / $15
      - Haiku 4.5: $1 / $5

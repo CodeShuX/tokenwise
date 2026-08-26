@@ -11,7 +11,7 @@ Thanks for considering a contribution. TokenWise is MIT-licensed and welcomes pu
 
 ## What needs help
 
-- **Pricing updates.** When Anthropic publishes new rates, update `skill/SKILL.md` (Phase 3 pricing table) and `CHANGELOG.md`.
+- **Pricing updates.** When Anthropic publishes new rates, update `skills/install/SKILL.md`'s pricing table and `CHANGELOG.md`.
 - **Bug reports** with real `.tokenwise/log.ndjson` excerpts (PII-redacted).
 - **Routing taxonomy refinements** — backed by A/B test reports showing quality regressions on the current taxonomy.
 - **Cross-platform install testing** — Linux / Mac / Windows / WSL.

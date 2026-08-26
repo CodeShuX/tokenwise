@@ -2,7 +2,7 @@
 
 > A Claude Code skill that routes work to the cheapest model that can handle it, measures actual savings on your real workload, and proves the routing didn't hurt quality.
 
-**Status:** locked v0.1.0 spec. Source of truth — features outside this doc are out of scope until v0.2.
+**Status:** locked v0.1.0 spec. Source of truth — features outside this doc are out of scope until added via a dated amendment (§11) or a new spec version.
 
 ---
 
@@ -10,7 +10,7 @@
 
 Claude Code users on Max plans burn through Opus tokens on tasks Haiku could handle in a tenth the cost. The pain is twofold:
 
-1. **Cost.** Opus is 5× Haiku and 1.67× Sonnet (per Anthropic pricing, May 2026: Opus 4.7 $5/$25, Sonnet 4.6 $3/$15, Haiku 4.5 $1/$5 per 1M tokens input/output). A "research this file" task running on Opus is paying 5× for no quality lift.
+1. **Cost.** Opus is 5× Haiku and 1.67× Sonnet (per Anthropic pricing, May 2026: Opus 4.7 $5/$25, Sonnet 4.6 $3/$15, Haiku 4.5 $1/$5 per 1M tokens input/output; Fable 5, added August 2026, is $10/$50 — 2× Opus). A "research this file" task running on Opus is paying 5× for no quality lift, and one running on Fable is paying 10×.
 2. **Context overrun.** The primary thread balloons fast when grunt work runs inline. Subagents have their own context budgets — work routed out and synthesized back keeps the primary thread alive for long sessions without forced auto-compact.
 
 **Anthropic Issue #27665** documents that 93.8% of Max-subscriber tokens flow to Opus despite community demand for auto-routing (Issue #44976). Anthropic has not shipped this. Existing routers (claude-router, wshobson, VoltAgent) either pin models statically or use vibes-based heuristics with no measurement.
@@ -35,18 +35,17 @@ Secondary: power users who want a programmable routing layer they can extend.
 
 ### In scope
 
-1. **Router** — Opus orchestrator delegates to Haiku/Sonnet subagents based on task taxonomy
+1. **Router** — the orchestrator classifies each task by type and delegates directly to Haiku/Sonnet/Opus/Fable subagents, automatically, no per-task confirmation
 2. **Measurement** — every subagent spawn logged with tokens-per-task-class to `.tokenwise/log.ndjson`
 3. **A/B-test mode** — `/tokenwise:ab <task>` runs the same task at multiple tiers, diffs outputs, reports cost+quality
 4. **Config installer** — guided (auto-write with diff preview) or manual (print-and-exit) — installs routing rules + env vars
 5. **Reports** — `/tokenwise:report` (session), `/tokenwise:summary --week` (trend), `/tokenwise:undo` (restore)
 6. **Real-time cost ticker** — optional running $ counter, toggleable
-7. **Budget cap** — alert when session crosses configured threshold
-8. **Prompt-cache hint detector** — flag re-reads of same file as cache-eligible
-9. **Context-window watcher** — alert at 70%/85%/95% of context
-10. **Privacy-first** — zero telemetry, all logs local
+7. **Prompt-cache hint detector** — flag re-reads of same file as cache-eligible
+8. **Context-window watcher** — alert at 70%/85%/95% of context
+9. **Privacy-first** — zero telemetry, all logs local
 
-### Out of scope (deferred to v0.2+)
+### Out of scope (deferred to v0.3+)
 
 - Cost-per-task pre-estimator
 - GitHub Action that comments savings on PRs
@@ -55,6 +54,7 @@ Secondary: power users who want a programmable routing layer they can extend.
 - Shared/public leaderboard
 - Cost projection across full project history
 - Self-healing prompt rewrites for cheaper-model performance
+- **Budget cap** — alert when session crosses a configured $ threshold. Listed as in-scope in the original v0.1.0 draft but never specified in any skill file; v0.1 ships a one-time install-time pricing notice plus per-tier `/tokenwise:report` breakdown instead (see §11 amendment)
 
 ### Explicitly NOT doing
 
@@ -147,20 +147,21 @@ Three subcommands:
 
 ## 5. The routing taxonomy
 
-Tasks classified into 3 tiers. The orchestrator (Opus) uses this taxonomy to pick a subagent model.
+Tasks classified into 4 parallel type lanes. The orchestrator uses this taxonomy to pick a subagent model automatically — every lane is a direct destination, none requires confirmation.
 
 | Task class | Model | Examples |
 |---|---|---|
 | **Mechanical** | Haiku | file reads, grep, format, rename symbol, list files, simple text edits, doc lookup, dependency listing |
-| **Scoped reasoning** | Sonnet | single-file refactor, test writing, scoped research, code exploration, bug-fix in known file, scoped review |
-| **Synthesis / planning** | Opus | architecture decisions, multi-file refactor synthesis, security review, ambiguous requirements, novel algorithm design, cross-cutting bug RCA |
+| **Execution** | Sonnet | single-file refactor, test writing, scoped research, code exploration, bug-fix in known file, small-scoped planning |
+| **Review** | Opus | security review, cross-cutting bug RCA, auditing outputs, choosing between already-stated options |
+| **Planning** | Fable | system-wide architecture, multi-file/cross-cutting design, migration strategy, decomposing ambiguous requirements |
 
 ### Safety caps
 
 - Haiku never spawns subagents (if the task needs delegation, it was wrong-sized)
 - Max spawn depth = 2 (parent → subagent → one more tier)
-- If a subagent realizes it needs a smarter model, it returns control to parent — never escalates on its own
-- Subagent input size cap: if `>30k tokens` of context needed, bump tier (Haiku → Sonnet, Sonnet → Opus)
+- A subagent that discovers it was misclassified never re-routes itself — it returns control to the parent, which reclassifies directly to the correct lane (any lane, one hop — e.g. Sonnet → Fable with no detour through Opus) and re-spawns once. If the re-spawned task bounces again, the parent finishes it inline
+- Subagent input size cap: if `>30k tokens` of context needed, use the next more capable model within a lane (Haiku → Sonnet, Sonnet → Opus). This bump stops at Opus — it compensates for context volume, which Opus fully handles. Fable is reached by task type (Planning) only, never by input size
 - Trivial-task floor: if task description `<100 chars` AND no file context, do inline on parent (no subagent — subagent overhead exceeds savings)
 
 ---
@@ -194,25 +195,26 @@ TokenWise specifically does **measurement-driven routing for Anthropic on Claude
 TokenWise Session Report
 ========================
 
-Tasks routed:        47
+Tasks routed:        48
 Duration:            2h 14m
 
 Per model:
   Haiku    32 tasks   1.2M input  /  84K output   →  $1.62
   Sonnet   12 tasks   480K input  /  41K output   →  $2.06
   Opus      3 tasks   145K input  /  28K output   →  $1.43
+  Fable     1 task     58K input  /  12K output   →  $1.18
 
-Total spent:         $5.11
-Baseline (all-Opus): $24.93
-Savings:             $19.82  (79.5%)
+Total spent:         $6.29
+Baseline (all-Opus): $25.52
+Savings:             $19.23  (75.4%)
 
 Quality flags:
-  Escalations:        2 (Haiku → Sonnet, mid-task)
+  Reclassifications:  2 (Mechanical → Execution, mid-task)
   User overrides:     0
   Regressions:        0
 ```
 
-This is the screenshot we put at the top of the README. Real numbers from a real session — no synthetic demo.
+This is the screenshot we put at the top of the README. Illustrative numbers matching the hero card and README sample output — kept in sync across both. `examples/session-report.md` is a separate, dated historical example from before the Planning tier existed, deliberately left unretouched.
 
 ---
 
@@ -249,12 +251,13 @@ tokenwise/
 ## 9. Versioning
 
 - v0.1.0 — this spec
-- v0.2 — pre-task cost estimator, GitHub Action, multi-month digest
+- v0.2.0 — Fable 5 as a 4th automatic routing tier (Planning); see §11 amendment
+- v0.3 — pre-task cost estimator, GitHub Action, multi-month digest, budget cap
 - v1.0 — workload profiles (a user can save "my-Rails-app" taxonomy as a profile and share it)
 
 Per-skill decisions to revisit:
 - Whether the auto-config writer should be opt-in instead of default-guided
-- Whether to expose the routing taxonomy as user-editable YAML (likely yes in v0.2)
+- Whether to expose the routing taxonomy as user-editable YAML (likely yes in v0.3)
 
 ---
 
@@ -268,6 +271,22 @@ v0.1.0 ships when:
 - ✅ `undo` restores config exactly to pre-install state
 - ✅ README has a real session-report screenshot (not synthetic)
 - ✅ Smoke test passes: `validate` → `marketplace add` → `install` → `list` → invoke → `uninstall` → `remove`
+
+---
+
+## 11. Amendments
+
+### 2026-08-25 — Fable 5 added as the Planning tier; taxonomy rebalanced to four symmetric type lanes
+
+Anthropic shipped Claude Fable 5 ($10/$50 per 1M tokens, 2× Opus) as its top-of-line "Mythos-class" model. TokenWise now classifies every task by TYPE across four parallel, equally-automatic lanes: **Mechanical → Haiku, Execution → Sonnet, Review → Opus, Planning → Fable**. All four route with zero per-task confirmation — Fable is not a ceiling bolted onto a cost ladder, it's the direct destination for large/cross-cutting/ambiguous planning work, exactly as automatic as the other three.
+
+`task_class` values are `mechanical|execution|review|planning`. Ladder-style escalation (Haiku→Sonnet→Opus, with Fable reached only via an out-of-band `beyond-opus` flag) is replaced by **reclassification**: a subagent that discovers it was misclassified returns control to the parent (never re-routes itself), which reclassifies directly to the correct lane in one hop — any lane, including Sonnet → Fable — and re-spawns at most once. `escalation_reason` values are `needs-mechanical|needs-execution|needs-review|needs-planning|ambiguous-spec|insufficient-capability`.
+
+The input-size bump (`>30k tokens` → next more capable model) still exists but now reads as a same-lane capability bump (Haiku→Sonnet, Sonnet→Opus) rather than a cost-tier bump; it still stops at Opus, and Fable is reached by task type only, never input size — this is what keeps Fable rare without needing a confirmation gate.
+
+Cost safety is a one-time pricing notice printed at the end of `/tokenwise:install`, not a per-task prompt — the formal "Budget cap" scope item (§3) was already an unfulfilled promise in this locked spec (in-scope since v0.1.0, never specified in any skill file) and is now explicitly deferred to v0.3 rather than left dangling.
+
+**Report/summary consequence (unchanged):** `cost_baseline_usd` stays pinned to Opus (the all-Opus baseline). A Planning (Fable) log line therefore has `savings_usd < 0` — that's expected, not a bug. It means the task cost more than the baseline because it genuinely needed more than Opus could give it. `/tokenwise:report` and `/tokenwise:summary` must render negative savings as-is (a `-$` line), not clamp to zero.
 
 ---
 

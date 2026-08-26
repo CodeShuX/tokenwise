@@ -14,13 +14,13 @@ The whole point of TokenWise is that you don't have to trust the router — you 
 ## What `ab` does
 
 ```
-/tokenwise:ab "<task description>" [--tiers haiku,sonnet,opus]
+/tokenwise:ab "<task description>" [--tiers haiku,sonnet,opus,fable]
 ```
 
 Steps:
 
 1. Parse the task description
-2. For each tier in `--tiers` (default: `haiku,sonnet`):
+2. For each tier in `--tiers` (default: `haiku,sonnet`; add `opus` or `fable` explicitly to include them):
    - Spawn a subagent at that tier with the exact prompt
    - Capture stdout, token usage, duration, errors
 3. Compute pairwise diffs:
@@ -32,7 +32,7 @@ Steps:
 
 A/B is intentionally not cheap — you're running the task N times. The cost is logged the same way regular routing is logged, with `task_class: "ab-test"` so it doesn't pollute your normal stats.
 
-**Rule of thumb:** an A/B costs roughly `N × the task's normal cost at the highest tier tested`. So an A/B of `haiku,sonnet` for a task that would cost $0.05 at Sonnet costs ~$0.07.
+**Rule of thumb:** an A/B costs roughly `N × the task's normal cost at the highest tier tested`. So an A/B of `haiku,sonnet` for a task that would cost $0.05 at Sonnet costs ~$0.07. Including `fable` changes that math a lot — Fable alone can cost more than the other three tiers combined, since it's priced at 2× Opus. Add it when calibrating the Planning lane specifically — e.g. checking whether a recurring "planning-flavored" task class actually needs Fable, or whether an override pinning it to `sonnet`/`opus` performs just as well for your codebase — not as a routine part of every A/B run.
 
 A/B tests pay for themselves quickly: one verified "Haiku is fine for this" saves the cost of the A/B in 1-3 future runs.
 

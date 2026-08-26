@@ -35,7 +35,7 @@ Do these checks (use Read and Bash tools):
 3. **Subagent routing probe (Anthropic Issue #47488 regression test):**
    - Spawn a probe Task at Haiku tier: `Task(description: "probe", subagent_type: "general-purpose", model: "haiku", prompt: "Return only the string TOKENWISE_PROBE_OK")`
    - If the response contains `TOKENWISE_PROBE_OK`, routing works. If not, mark probe as FAILED.
-   - Note: if your Task tool doesn't support `model:`, mark as "routing probe: unverifiable on this build" and proceed.
+   - Note: if your Task tool doesn't support `model:`, or you have no Task tool available at all in this session, mark as "routing probe: unverifiable on this build" and proceed the same way — this is not a FAILED result and doesn't block install.
 
 4. **Env-var probe (Anthropic Issue #36381):**
    - Run `bash -c 'CLAUDE_AUTOCOMPACT_PCT_OVERRIDE=80 env | grep CLAUDE_AUTOCOMPACT'`
@@ -77,38 +77,67 @@ If neither exists, ask: "No CLAUDE.md found. Create one at: [1] global [2] proje
 
 ### Compose the routing block
 
-This is the TokenWise routing block. It is inserted between `<!-- BEGIN TokenWise -->` and `<!-- END TokenWise -->` markers.
+This is the TokenWise routing block. It is inserted between `<!-- BEGIN TokenWise -->` and `<!-- END TokenWise -->` markers. If the target file already contains these markers, replace everything between them in place. Otherwise, append the whole block to the end of the file, preceded by one blank line — don't try to find a "natural" insertion point among existing headings.
 
 ```markdown
 <!-- BEGIN TokenWise — routing rules. Managed by /tokenwise:install. Do not edit by hand. -->
 ## Model routing (TokenWise)
 
-When delegating work via the Task tool, pick the cheapest subagent model that can handle it:
+When delegating work via the Task tool, classify the task by TYPE and route it
+automatically. All four tiers are equal, direct destinations — none of them
+needs a confirmation prompt:
 
-- **Haiku** (5× cheaper than Opus) — mechanical bulk: file reads, grep, format, rename,
-  simple edits, doc lookups. No judgment calls.
-- **Sonnet** (~1.67× cheaper than Opus) — scoped reasoning: single-file refactor,
-  test writing, scoped research, code exploration, bug-fix in known file.
-- **Opus** — synthesis only: architecture decisions, multi-file refactor synthesis,
-  security review, ambiguous requirements, cross-cutting bug RCA.
+- **Mechanical → Haiku** (5× cheaper than Opus) — one-right-answer work: file reads,
+  grep, format, rename, simple edits, doc lookups. No judgment calls.
+- **Execution → Sonnet** (~1.67× cheaper than Opus) — bounded implementation: single-file
+  refactor, test writing, bug-fix in a known file, scoped research and code exploration.
+  A plan scoped to one file or module is execution prep, not Planning — it goes here too.
+- **Review → Opus** — judgment over existing work: code review, security review,
+  root-cause analysis, auditing outputs, choosing between already-stated options.
+- **Planning → Fable** (2× Opus) — large planning only: system-wide architecture,
+  multi-file or cross-cutting design, migration strategy, decomposing ambiguous
+  requirements into a work plan.
+
+Classification rules, in order:
+1. Trivial floor: description <100 chars AND no file context → run inline, no subagent.
+2. User override `# tokenwise: <haiku|sonnet|opus|fable>` in CLAUDE.md context wins.
+3. Verb is find/grep/rename/format/read/list with a clear target → Mechanical.
+4. Verb is implement/refactor/fix/test/explore, scoped to ≤2 named files or one module
+   → Execution. Planning questions with the same tight scope also go here.
+5. Verb is review/audit/evaluate/diagnose over existing code or given options → Review.
+6. Design/architecture/planning work spanning 3+ files, crossing systems, or starting
+   from ambiguous requirements → Planning.
+When two types fit, prefer the cheaper lane — a misroute costs one cheap
+reclassification (below), so under-routing is cheap and over-routing isn't.
 
 Safety caps:
-- Haiku never spawns further subagents. If a Haiku task wants to delegate,
-  return to parent for re-classification.
-- Max spawn depth = 2 (parent → subagent → one more tier).
-- A subagent that needs a smarter model returns to parent — never escalates on its own.
-- Task description <100 chars AND no file context: run inline, no subagent.
-- Subagent context >30k tokens: bump up a tier.
+- Subagents NEVER self-escalate or re-route. A subagent that discovers it was
+  misclassified (wrong type, or right type but insufficient capability) stops
+  and returns to the parent with an `escalation_reason`. The parent
+  reclassifies directly to the correct lane — any lane, one hop, e.g. Sonnet →
+  Fable with no detour through Opus — and re-spawns once. If the re-spawned
+  task bounces again, the parent finishes it inline.
+- Max spawn depth = 2 (parent → subagent → one more). Haiku never spawns subagents.
+- Subagent context >30k tokens: use the next more capable model within a lane
+  (Haiku → Sonnet, Sonnet → Opus). This bump stops at Opus — it compensates for
+  context volume, which Opus fully handles. Fable is reached by task type
+  (Planning) only, never by input size.
 
 After every routed Task, append one NDJSON line to `.tokenwise/log.ndjson` in the current project root (create the directory if missing). Schema:
-{"ts": "ISO8601", "task_class": "mechanical|scoped|synthesis",
+{"ts": "ISO8601", "task_class": "mechanical|execution|review|planning",
  "task_summary": "<first 80 chars, redact secrets>",
- "model_used": "haiku-4-5|sonnet-4-6|opus-4-7", "model_baseline": "opus-4-7",
+ "model_used": "haiku-4-5|sonnet-4-6|opus-4-7|fable-5", "model_baseline": "opus-4-7",
  "input_tokens": N, "output_tokens": N,
  "cost_actual_usd": N, "cost_baseline_usd": N, "savings_usd": N,
- "escalated": bool, "escalation_reason": null|str, "duration_ms": N}
+ "escalated": bool,
+ "escalation_reason": null|"needs-mechanical"|"needs-execution"|"needs-review"|"needs-planning"|"ambiguous-spec"|"insufficient-capability",
+ "duration_ms": N}
 
-Pricing (May 2026, per 1M tokens, input/output):
+Note: `savings_usd` for a Planning (Fable) line will be negative (Fable costs more than
+the Opus baseline). That's expected — log it as-is, don't clamp to zero.
+
+Pricing (Aug 2026, per 1M tokens, input/output):
+- Fable 5:     $10 / $50
 - Opus 4.7:    $5 / $25
 - Sonnet 4.6:  $3 / $15
 - Haiku 4.5:   $1 / $5
@@ -126,13 +155,18 @@ Pricing (May 2026, per 1M tokens, input/output):
 }
 ```
 
-(Merge into existing `env` object if present.)
+(Merge into existing `env` object if present. If the existing `env` object has other keys, keep them — only add/update the two TokenWise keys above.)
 
 ### Guided mode flow
 
 For each file to modify:
 
-1. Print a unified diff of the proposed change
+1. Print a unified diff of the proposed change. When diffing `settings.json`,
+   elide the value of any pre-existing `env` key that looks like a secret
+   (name contains `KEY`, `TOKEN`, `SECRET`, or the value itself matches a
+   common credential shape) — show `"<redacted — existing value unchanged>"`
+   in its place. Never print a real secret value into a diff, even one you
+   are not modifying.
 2. Ask `[Y/n] Apply this change?`
 3. If Y:
    - Compute timestamp: `date +%Y%m%d-%H%M%S`
@@ -155,6 +189,10 @@ Next steps:
   1. Restart Claude Code so routing rules load
   2. Use Claude Code normally — every routed Task is logged automatically
   3. Run /tokenwise:report after a few tasks to see savings
+
+Heads-up: large planning tasks route to Fable 5 automatically ($10/$50 per 1M
+tokens, 2× Opus). There is no per-task prompt — run /tokenwise:report anytime
+to see real per-tier spend.
 
 To undo at any time: /tokenwise:undo
 ```

@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <title>TokenWise — social preview</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;600;800;900&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Archivo:wght@600;700;900&display=swap');
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -12,19 +12,9 @@
     width: 1280px;
     height: 640px;
     background: #0a0e1a;
-    font-family: 'Inter', system-ui, sans-serif;
+    font-family: 'Archivo', system-ui, sans-serif;
     color: #e8eef9;
     overflow: hidden;
-  }
-
-  .bg-grid {
-    position: absolute;
-    inset: 0;
-    background-image:
-      linear-gradient(rgba(110, 168, 254, 0.06) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(110, 168, 254, 0.06) 1px, transparent 1px);
-    background-size: 40px 40px;
-    mask-image: radial-gradient(ellipse at center, black 0%, transparent 70%);
   }
 
   .accent-glow {
@@ -88,7 +78,6 @@
     height: 6px;
     border-radius: 50%;
     background: #4ade80;
-    box-shadow: 0 0 8px #4ade80;
   }
 
   .wordmark {
@@ -113,6 +102,21 @@
   .tagline strong {
     color: #4ade80;
     font-weight: 700;
+  }
+
+  .models-line {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .models-line span::before {
+    content: '●';
+    font-size: 9px;
+    margin-right: 6px;
   }
 
   .footer {
@@ -182,6 +186,7 @@
   .haiku { color: #4ade80; }
   .sonnet { color: #facc15; }
   .opus { color: #f87171; }
+  .fable { color: #a78bfa; }
   .total { color: #e8eef9; font-weight: 700; }
   .saved { color: #4ade80; font-weight: 700; }
   .strike { text-decoration: line-through; color: #6a7390; }
@@ -189,7 +194,6 @@
 </style>
 </head>
 <body>
-  <div class="bg-grid"></div>
   <div class="accent-glow"></div>
   <div class="accent-glow-2"></div>
 
@@ -200,6 +204,12 @@
       <div class="tagline">
         Cut your Claude Code spend by <strong>80%</strong>.<br/>
         Measured on your real work — not a marketing claim.
+      </div>
+      <div class="models-line">
+        <span class="haiku">Haiku</span>
+        <span class="sonnet">Sonnet</span>
+        <span class="opus">Opus</span>
+        <span class="fable">Fable</span>
       </div>
       <div class="footer">
         <div class="footer-pill">/plugin install</div>
@@ -217,15 +227,16 @@
           <div class="terminal-title">~ /tokenwise report</div>
         </div>
         <div class="terminal-body">
-          <div class="row"><span class="label">47 tasks · 2h 14m</span></div>
+          <div class="row"><span class="label">48 tasks · 2h 14m</span></div>
           <div class="divider">────────────────────────</div>
           <div class="row"><span class="haiku">Haiku</span><span class="cmd">32 tasks · $1.62</span></div>
           <div class="row"><span class="sonnet">Sonnet</span><span class="cmd">12 tasks · $2.06</span></div>
           <div class="row"><span class="opus">Opus</span><span class="cmd">3 tasks · $1.43</span></div>
+          <div class="row"><span class="fable">Fable</span><span class="cmd">1 task · $1.18</span></div>
           <div class="divider">────────────────────────</div>
-          <div class="row"><span class="label">Total</span><span class="total">$5.11</span></div>
-          <div class="row"><span class="label">Baseline</span><span class="strike">$24.93</span></div>
-          <div class="row"><span class="label">Saved</span><span class="saved">$19.82 · 79.5%</span></div>
+          <div class="row"><span class="label">Total</span><span class="total">$6.29</span></div>
+          <div class="row"><span class="label">Baseline</span><span class="strike">$25.52</span></div>
+          <div class="row"><span class="label">Saved</span><span class="saved">$19.23 · 75.4%</span></div>
         </div>
       </div>
     </div>
