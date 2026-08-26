@@ -152,7 +152,7 @@ Tasks classified into 4 parallel type lanes. The orchestrator uses this taxonomy
 | Task class | Model | Examples |
 |---|---|---|
 | **Mechanical** | Haiku | file reads, grep, format, rename symbol, list files, simple text edits, doc lookup, dependency listing |
-| **Execution** | Sonnet | single-file refactor, test writing, scoped research, code exploration, bug-fix in known file, small-scoped planning |
+| **Execution** | Sonnet | refactor/test/fix scoped to 1-2 files, scoped research, code exploration, small-scoped planning |
 | **Review** | Opus | security review, cross-cutting bug RCA, auditing outputs, choosing between already-stated options |
 | **Planning** | Fable | system-wide architecture, multi-file/cross-cutting design, migration strategy, decomposing ambiguous requirements |
 
@@ -205,8 +205,8 @@ Per model:
   Fable     1 task     58K input  /  12K output   →  $1.18
 
 Total spent:         $6.29
-Baseline (all-Opus): $25.52
-Savings:             $19.23  (75.4%)
+Baseline (all-Opus): $13.54
+Savings:             $7.25  (53.5%)
 
 Quality flags:
   Reclassifications:  2 (Mechanical → Execution, mid-task)

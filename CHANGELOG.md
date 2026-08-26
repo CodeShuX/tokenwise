@@ -24,6 +24,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `/tokenwise:install`'s settings.json diff step could have echoed a real pre-existing secret from the user's `env` block (found via a live dry-run simulation against a real config) — the diff now redacts any existing key that looks like a secret before printing it.
 - CLAUDE.md routing-block insertion point was unspecified when no markers exist yet — now explicit (append at end of file).
 - The "no Task tool available" case for the routing probe now falls back the same way as "Task tool ignores `model:`", instead of being unhandled.
+- **`cost_baseline_usd` was never actually defined anywhere, and every sample report's baseline didn't reconcile with its own token counts** (~1.9× inflated when independently re-priced at Opus rate — caught by re-running the exact `jq`/`awk` command `examples/session-report.md` itself tells readers to use). Baseline is now explicitly defined (a task's own tokens, re-priced at Opus rate) in `skills/install/SKILL.md`, and every sample report — README, SPEC, the hero card, and `examples/session-report.md` — has been recomputed to match it exactly. The hero image's "Cut your Claude Code spend by 80%" headline is removed for the same reason: no sample in this repo supports that number once the math is checked.
+- CHANGELOG's own `[0.1.0]` entry claimed a "budget cap" shipped; it never existed in any skill file. Corrected rather than left as a standing false claim.
+- Execution tier's routing rule said "≤2 named files" while its own prose description said "single-file" in three places — reworded the prose to "1-2 files" to match the actual rule.
 
 ## [0.1.1] — 2026-05-11
 
@@ -49,7 +52,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Safety caps: Haiku never spawns subagents; max depth 2; trivial-task floor.
 - NDJSON measurement log at `.tokenwise/log.ndjson` (zero telemetry, local only).
 - Phase-1 probes for `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE` and subagent `model:` param (Anthropic Issues #36381, #47488).
-- Prompt-cache hint detector + context-window watcher + budget cap.
+- Prompt-cache hint detector + context-window watcher. (Budget cap was listed as in-scope for this release but was never actually specified in any skill file — corrected here rather than left as a false claim; see the [0.2.0] entry, which formally defers it to v0.3.)
 
 ### Known limitations
 - Token counts approximate to ±2% vs Anthropic billing.

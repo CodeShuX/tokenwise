@@ -89,8 +89,8 @@ needs a confirmation prompt:
 
 - **Mechanical → Haiku** (5× cheaper than Opus) — one-right-answer work: file reads,
   grep, format, rename, simple edits, doc lookups. No judgment calls.
-- **Execution → Sonnet** (~1.67× cheaper than Opus) — bounded implementation: single-file
-  refactor, test writing, bug-fix in a known file, scoped research and code exploration.
+- **Execution → Sonnet** (~1.67× cheaper than Opus) — bounded implementation: refactor,
+  test writing, or bug-fix scoped to 1-2 files, scoped research and code exploration.
   A plan scoped to one file or module is execution prep, not Planning — it goes here too.
 - **Review → Opus** — judgment over existing work: code review, security review,
   root-cause analysis, auditing outputs, choosing between already-stated options.
@@ -132,6 +132,11 @@ After every routed Task, append one NDJSON line to `.tokenwise/log.ndjson` in th
  "escalated": bool,
  "escalation_reason": null|"needs-mechanical"|"needs-execution"|"needs-review"|"needs-planning"|"ambiguous-spec"|"insufficient-capability",
  "duration_ms": N}
+
+`cost_baseline_usd` is this task's own `input_tokens`/`output_tokens` re-priced at Opus's
+rate — not a separate estimate. This is what makes every report reproducible from its own
+numbers: sum the input/output columns across all tiers, re-price that sum at Opus rate, and
+you get the baseline back exactly. `savings_usd = cost_baseline_usd - cost_actual_usd`.
 
 Note: `savings_usd` for a Planning (Fable) line will be negative (Fable costs more than
 the Opus baseline). That's expected — log it as-is, don't clamp to zero.
