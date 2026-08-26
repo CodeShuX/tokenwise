@@ -18,9 +18,9 @@ Per model:
   Opus      3 tasks     145,100 input  /   28,440 output   →   $1.4365
 
 Total spent:                                                   $5.1435
-Baseline (if all-Opus):                                       $24.9320
-Savings:                                                      $19.7885
-Savings %:                                                       79.4%
+Baseline (if all-Opus):                                       $13.0768
+Savings:                                                       $7.9333
+Savings %:                                                       60.7%
 
 Top task classes (by count):
   code-search             18 tasks    avg cost $0.041   model: haiku
@@ -48,7 +48,7 @@ Pricing snapshot (used for this session, May 2026):
 
 ## What this session shows
 
-- **79.4% real savings.** Not a marketing number — the NDJSON log backs every line.
+- **60.7% real savings.** Not a marketing number — the NDJSON log backs every line: sum the input/output columns above, re-price at Opus's rate, and the baseline comes back out exactly.
 - **Haiku handled 68% of tasks** — almost all the code-search and file-read work.
 - **2 escalations.** Both were tasks with cross-file dependencies. The router noticed and bumped up a tier. No user intervention needed.
 - **Architecture and security work stayed on Opus.** That's the point — Opus where it earns its cost.

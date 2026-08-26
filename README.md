@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./assets/social-preview.png" alt="TokenWise — Cut your Claude Code spend by 80%. Measured on your real work, not a marketing claim." width="100%" />
+  <img src="./assets/social-preview.png" alt="TokenWise — Cut your Claude Code spend, measured on your real work, not a marketing claim." width="100%" />
 </p>
 
 # TokenWise
@@ -63,7 +63,7 @@ The router classifies every task by type into four tiers — each one a direct, 
 | Tier | Model | What it gets |
 |---|---|---|
 | **Mechanical** | Haiku 4.5 | file reads, grep, format, rename, simple edits, doc lookups |
-| **Execution** | Sonnet 4.6 | single-file refactor, test writing, scoped research, code exploration, small-scoped planning |
+| **Execution** | Sonnet 4.6 | refactor/test/fix scoped to 1-2 files, scoped research, code exploration, small-scoped planning |
 | **Review** | Opus 4.7 | security review, cross-cutting RCA, auditing outputs, choosing between already-stated options |
 | **Planning** | Fable 5 | system-wide architecture, multi-file/cross-cutting design, migration strategy, ambiguous requirements |
 
@@ -195,11 +195,11 @@ Per model:
   Fable     1 task     58K input  /  12K output   →  $1.18
 
 Total spent:         $6.29
-Baseline (all-Opus): $25.52
-Savings:             $19.23  (75.4%)
+Baseline (all-Opus): $13.54
+Savings:             $7.25  (53.5%)
 
 Quality flags:
-  Escalations:        2 (Haiku → Sonnet, mid-task)
+  Reclassifications:  2 (Mechanical → Execution, mid-task)
   User overrides:     0
   Regressions:        0
 ```
