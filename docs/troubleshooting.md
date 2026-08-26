@@ -52,7 +52,7 @@ Three quick checks:
    ```
    /tokenwise:probe
    ```
-   This spawns a probe subagent at each tier and reports back. If all three tiers return their expected model identifier, routing works.
+   This spawns a probe subagent at each tier and reports back. If all four tiers return their expected model identifier, routing works.
 
 ## "Log file is huge"
 
@@ -67,11 +67,21 @@ jq -c 'select(.ts > (now - 30*86400 | strftime("%Y-%m-%dT%H:%M:%SZ")))' \
 
 Or rotate it yourself — TokenWise doesn't care about the file's history beyond what `summary` is reporting on.
 
+## "A Fable task shows negative savings"
+
+This is expected, not a bug. `savings_usd` is always `cost_baseline_usd - cost_actual_usd`, and `cost_baseline_usd` is always priced at Opus (the all-Opus baseline). Fable costs 2× Opus, so any task that actually ran on Fable cost more than the baseline — the negative number is TokenWise telling you honestly that this specific task needed more than Opus could give it. `/tokenwise:report` and `/tokenwise:summary` will fold that negative value into the session/window total as-is.
+
+If you're seeing more Fable lines than expected, the classifier is treating too much of your work as large planning. Run `/tokenwise:ab "<task>"` on a representative example — if a cheaper tier scores just as well, add an override pinning that pattern to `sonnet` or `opus` (see [routing-taxonomy.md](./routing-taxonomy.md#overriding-the-default-taxonomy)). Also check whether a `# tokenwise: fable` override in `CLAUDE.md` is matching more broadly than intended.
+
+## "Fable task came back as an Opus response"
+
+Not a TokenWise bug. Anthropic runs its own safety layer on Fable for high-risk categories (cybersecurity, biology, chemistry) — it can decline and fall back to Opus 4.8 on its own, independent of TokenWise's routing. TokenWise logs whatever model actually produced the output, so you'll see `opus-4-7` in that log line even though Fable was requested.
+
 ## "Report shows wrong cost"
 
 Two common causes:
 
-1. **Stale pricing.** Anthropic updates rates. Check `skill/SKILL.md` Phase 3 pricing table against current Anthropic pricing. Open a PR if outdated.
+1. **Stale pricing.** Anthropic updates rates. Check `skills/install/SKILL.md`'s pricing table against current Anthropic pricing. Open a PR if outdated.
 2. **Prompt caching.** TokenWise reports raw cost (conservative). If your work hits prompt cache often, actual cost is lower than reported. The report's `savings_usd` is therefore an underestimate.
 
 ## "I want to disable TokenWise temporarily"

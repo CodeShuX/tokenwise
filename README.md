@@ -9,9 +9,9 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-brightgreen.svg)](./LICENSE)
 [![GitHub stars](https://img.shields.io/github/stars/CodeShuX/tokenwise?style=social)](https://github.com/CodeShuX/tokenwise/stargazers)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-skill-d97757)](https://claude.com/claude-code)
-[![Anthropic](https://img.shields.io/badge/Anthropic-Haiku%20%2B%20Sonnet%20%2B%20Opus-7c5cff)](https://www.anthropic.com)
+[![Anthropic](https://img.shields.io/badge/Anthropic-Haiku%20%2B%20Sonnet%20%2B%20Opus%20%2B%20Fable-7c5cff)](https://www.anthropic.com)
 
-A Claude Code skill that routes work to the cheapest model that can handle it, **measures actual savings on your real workload**, and shows you the proof. Opus orchestrates, Haiku and Sonnet handle the grunt work, and you get a session report with verified $-saved numbers — not marketing claims.
+A Claude Code skill that routes every task to the model built for it, **measures actual savings on your real workload**, and shows you the proof. Haiku handles the mechanical work, Sonnet executes, Opus reviews, Fable plans — routed automatically by task type, and you get a session report with verified $-saved numbers — not marketing claims.
 
 ---
 
@@ -58,19 +58,21 @@ Five phases:
 4. **A/B test** — `/tokenwise:ab "<task>"` runs the same task on multiple tiers, diffs outputs, scores quality, writes a report. Use this to validate "is Haiku really good enough for my codebase?" before you trust the router.
 5. **Report** — `/tokenwise:report` (this session), `/tokenwise:summary --week` (trend), `/tokenwise:undo` (restore config from backup).
 
-The router classifies tasks into three tiers:
+The router classifies every task by type into four tiers — each one a direct, automatic destination, none of them gated behind a confirmation prompt:
 
 | Tier | Model | What it gets |
 |---|---|---|
 | **Mechanical** | Haiku 4.5 | file reads, grep, format, rename, simple edits, doc lookups |
-| **Scoped reasoning** | Sonnet 4.6 | single-file refactor, test writing, scoped research, code exploration |
-| **Synthesis / planning** | Opus 4.7 | architecture decisions, multi-file synthesis, security review, ambiguous requirements |
+| **Execution** | Sonnet 4.6 | single-file refactor, test writing, scoped research, code exploration, small-scoped planning |
+| **Review** | Opus 4.7 | security review, cross-cutting RCA, auditing outputs, choosing between already-stated options |
+| **Planning** | Fable 5 | system-wide architecture, multi-file/cross-cutting design, migration strategy, ambiguous requirements |
 
 Safety caps prevent regressions:
 - Haiku never spawns further subagents (if it wants to, the task was wrong-sized)
 - Max spawn depth = 2 (parent → subagent → one more tier)
 - Trivial-task floor: tasks under 100 chars with no file context run inline (subagent overhead > savings)
-- Input bump: if subagent context would exceed 30k tokens, escalate one tier
+- Input bump: if subagent context would exceed 30k tokens, use the next more capable model within a lane (Haiku → Sonnet, Sonnet → Opus). Stops at Opus — Fable is reached by task type, never by input size
+- Subagents never self-escalate. A misrouted task returns to the parent, which reclassifies it directly to the correct lane — any lane, one hop — and re-spawns once
 
 ---
 
@@ -96,18 +98,25 @@ Then in a fresh session:
 
 TokenWise will detect your config, show a diff of proposed changes, and ask for confirmation before writing anything.
 
-### Option 2 — Manual symlink
+### Option 2 — Manual clone (no marketplace)
+
+TokenWise ships as 5 command files under `skills/<name>/SKILL.md`, discovered
+through the `.claude-plugin/plugin.json` manifest — there's no longer a
+single file to symlink. Instead, symlink the whole clone into Claude Code's
+plugin cache, the same place `/plugin install` would put it:
 
 ```bash
 # 1. Clone the repo
 git clone https://github.com/CodeShuX/tokenwise.git ~/tokenwise
 
-# 2. Symlink the skill into your Claude Code skills directory
-mkdir -p ~/.claude/skills
-ln -s ~/tokenwise/skill/SKILL.md ~/.claude/skills/tokenwise.md
+# 2. Symlink it into Claude Code's plugin cache so all 5 commands register
+mkdir -p ~/.claude/plugins/cache
+ln -s ~/tokenwise ~/.claude/plugins/cache/tokenwise
 ```
 
-Verify either way by typing `/tokenwise` in any Claude Code session.
+Restart Claude Code, then verify with `/tokenwise:install`. If the command
+isn't recognized, your Claude Code build's plugin cache layout may differ —
+fall back to Option 1 (marketplace install), which is the supported path.
 
 ---
 
@@ -176,17 +185,18 @@ Lists all `.tokenwise-backup-*` files and lets you restore one.
 TokenWise Session Report
 ========================
 
-Tasks routed:        47
+Tasks routed:        48
 Duration:            2h 14m
 
 Per model:
   Haiku    32 tasks   1.2M input  /  84K output   →  $1.62
   Sonnet   12 tasks   480K input  /  41K output   →  $2.06
   Opus      3 tasks   145K input  /  28K output   →  $1.43
+  Fable     1 task     58K input  /  12K output   →  $1.18
 
-Total spent:         $5.11
-Baseline (all-Opus): $24.93
-Savings:             $19.82  (79.5%)
+Total spent:         $6.29
+Baseline (all-Opus): $25.52
+Savings:             $19.23  (75.4%)
 
 Quality flags:
   Escalations:        2 (Haiku → Sonnet, mid-task)
@@ -237,15 +247,16 @@ For this task class, **Haiku is sufficient** (quality 8/10, 68% cheaper).
 
 That depends on your workload. The router can only save what's safe to route — a session that's 90% architecture decisions won't see big savings; a session that's 90% file reads will. **The point isn't a guaranteed %. The point is that you'll know your real %, because TokenWise measures it.**
 
-Current Anthropic pricing (May 2026, per 1M tokens):
+Current Anthropic pricing (Aug 2026, per 1M tokens):
 
 | Model | Input | Output |
 |---|---|---|
+| Fable 5 | $10 | $50 |
 | Opus 4.7 | $5 | $25 |
 | Sonnet 4.6 | $3 | $15 |
 | Haiku 4.5 | $1 | $5 |
 
-Opus is 5× more expensive than Haiku for the same token. A task routed correctly to Haiku costs 20¢ on the dollar.
+Opus is 5× more expensive than Haiku for the same token, and Fable is 2× Opus on top of that. A task routed correctly to Haiku costs 20¢ on the dollar. Fable is the Planning lane: large architecture and cross-cutting design route there automatically, and everything else routes cheaper. A Planning task logs negative savings against the all-Opus baseline by design — the report shows you exactly what planning costs, and the installer prints a one-time pricing heads-up so it's never a surprise.
 
 ### Does it work with my Claude Code build?
 
@@ -259,7 +270,7 @@ If either probe fails, TokenWise refuses to install and tells you exactly which 
 
 **No.** TokenWise has zero telemetry. All logs are append-only NDJSON in `.tokenwise/log.ndjson` in your project. Task descriptions are truncated to 80 chars and stripped of file contents before logging. There is no analytics endpoint, no error reporter, no usage tracker.
 
-You can audit this by reading `skill/SKILL.md` and grepping for any network call. There aren't any.
+You can audit this by reading `skills/install/SKILL.md` and grepping for any network call. There aren't any.
 
 ### Will TokenWise modify my files?
 
@@ -279,13 +290,13 @@ Anthropic's 90% cached-input discount is honored automatically. TokenWise report
 
 No. TokenWise is Claude-Code-specific by design. If you need cross-vendor routing (Claude + GPT + Gemini), use [LiteLLM](https://github.com/BerriAI/litellm) or [OpenRouter](https://openrouter.ai). TokenWise stays in its lane — Anthropic-only, Claude-Code-only — and does that lane better than anything else.
 
-### What if Haiku gets a task wrong?
+### What if a task gets routed wrong?
 
 Two things:
-1. **Safety caps** — if Haiku realizes a task needs more reasoning, it returns to the parent (Opus) without escalating on its own. The parent re-classifies and retries at a higher tier. The escalation is logged so you can see how often it happens.
-2. **A/B test mode** — `/tokenwise:ab "<task>"` runs the same task on multiple tiers and scores them. If you're nervous about Haiku for some task class, run the A/B once and see.
+1. **Safety caps** — if a subagent realizes it was misclassified, it returns to the parent without re-routing itself. The parent reclassifies directly to the correct lane — any of the four, in one hop — and retries once. The reclassification is logged so you can see how often it happens.
+2. **A/B test mode** — `/tokenwise:ab "<task>"` runs the same task on multiple tiers and scores them. If you're nervous about a tier for some task class, run the A/B once and see.
 
-The most common escalation pattern is `Haiku → Sonnet` for tasks involving more than 2 file dependencies. That's worth knowing — and TokenWise tells you.
+The most common reclassification pattern is `Mechanical → Execution` for tasks that turn out to touch more than one file. That's worth knowing — and TokenWise tells you.
 
 ### What's the license?
 

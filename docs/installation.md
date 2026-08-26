@@ -22,13 +22,20 @@ TokenWise will scan your config, run health probes, show diffs, and ask for conf
 
 ## Manual install (no marketplace)
 
+TokenWise ships as 5 command files under `skills/<name>/SKILL.md`, discovered
+through the `.claude-plugin/plugin.json` manifest — there's no single file to
+symlink anymore. Symlink the whole clone into Claude Code's plugin cache
+instead, the same place `/plugin install` would put it:
+
 ```bash
 git clone https://github.com/CodeShuX/tokenwise.git ~/tokenwise
-mkdir -p ~/.claude/skills
-ln -s ~/tokenwise/skill/SKILL.md ~/.claude/skills/tokenwise.md
+mkdir -p ~/.claude/plugins/cache
+ln -s ~/tokenwise ~/.claude/plugins/cache/tokenwise
 ```
 
-Restart Claude Code if it was running.
+Restart Claude Code if it was running. This is a best-effort fallback — the
+plugin cache layout isn't a stable public API, so if `/tokenwise:install`
+doesn't register, use the marketplace install path above instead.
 
 ## What `/tokenwise:install` does
 
@@ -41,6 +48,7 @@ Restart Claude Code if it was running.
 7. Proposes config changes, one file at a time
 8. For each: shows diff, asks `[Y/n]`, backs up original, writes change
 9. Verifies writes by re-reading
+10. Prints a one-time notice that large planning tasks route to Fable automatically ($10/$50 per 1M tokens, 2× Opus) — there's no per-task prompt after this
 
 If any probe fails, install refuses and prints the affected Anthropic issue.
 

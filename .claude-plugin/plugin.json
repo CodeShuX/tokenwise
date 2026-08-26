@@ -1,6 +1,6 @@
 {
   "name": "tokenwise",
-  "description": "Measurement-driven model router for Claude Code. Routes Haiku/Sonnet/Opus, measures real dollars saved per session.",
+  "description": "Measurement-driven model router for Claude Code. Classifies every task by type — mechanical, execution, review, planning — and routes it automatically to Haiku, Sonnet, Opus, or Fable. Measures real dollars saved per session.",
   "version": "0.1.1",
   "author": {
     "name": "CodeShuX",

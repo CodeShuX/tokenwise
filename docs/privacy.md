@@ -43,12 +43,12 @@ The Anthropic API call itself is between you and Anthropic — TokenWise doesn't
 
 ```bash
 # Grep the skill source for any network call:
-grep -nE 'fetch\(|http(s)?://|axios|curl|wget|got\(' skill/SKILL.md
+grep -nE 'fetch\(|http(s)?://|axios|curl|wget|got\(' skills/*/SKILL.md
 
 # Result: zero matches (apart from documentation links in markdown).
 ```
 
-The skill is a single markdown file. It contains routing rules and instructions for Claude Code's built-in subagent + log-writing primitives. There's nothing for it to phone home to.
+The skill is five markdown files (one per command, under `skills/`). Each contains routing rules and instructions for Claude Code's built-in subagent + log-writing primitives. There's nothing for it to phone home to.
 
 ## Task description redaction
 

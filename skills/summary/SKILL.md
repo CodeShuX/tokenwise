@@ -26,7 +26,7 @@ Aggregate `.tokenwise/log.ndjson` over a time window.
 3. **Aggregate:**
    - **Total:** sessions (unique session_id), tasks, total cost, baseline cost, savings
    - **Per model:** task count, cost, % of total
-   - **Per task_class:** task count, avg cost, dominant model
+   - **Per task_class** (`mechanical|execution|review|planning`): task count, avg cost, dominant model
    - **Trend** (only for `--week` or `--days <≤14>`): per-day cost + savings bar chart in plain text
 
 4. **Print:**
@@ -45,6 +45,7 @@ Per model:
   Haiku    <count> tasks  $<cost>  (<pct>%)
   Sonnet   <count> tasks  $<cost>  (<pct>%)
   Opus     <count> tasks  $<cost>  (<pct>%)
+  Fable    <count> tasks  $<cost>  (<pct>%)
 
 Top task classes:
   <class>          <count> tasks   avg cost $<avg>   model: <dominant>
@@ -65,6 +66,7 @@ Daily trend (cost):
 
 - If <2 sessions in the window: print the report but add `Note: too few sessions for meaningful trend data.`
 - If log file is empty/missing: print the same "No TokenWise log found" message that `/tokenwise:report` uses.
+- Omit any "Per model" row whose count is 0 for the window — Fable's row will legitimately be absent for most users most of the time.
 
 ## Tools
 

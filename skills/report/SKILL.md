@@ -1,5 +1,5 @@
 ---
-description: Print a TokenWise session report — tokens per model, $ saved vs all-Opus baseline, escalations, quality flags. Reads from .tokenwise/log.ndjson filtered to the current session. Use when the user asks "how much did I save", "show me tokenwise stats", or runs /tokenwise:report.
+description: Print a TokenWise session report — tokens per model, $ saved vs all-Opus baseline, reclassifications, quality flags. Reads from .tokenwise/log.ndjson filtered to the current session. Use when the user asks "how much did I save", "show me tokenwise stats", or runs /tokenwise:report.
 ---
 
 # /tokenwise:report — Session routing report
@@ -49,21 +49,25 @@ Per model:
   Haiku    <count> tasks   <input_sum> input  /  <output_sum> output   →  $<cost_sum>
   Sonnet   <count> tasks   <input_sum> input  /  <output_sum> output   →  $<cost_sum>
   Opus     <count> tasks   <input_sum> input  /  <output_sum> output   →  $<cost_sum>
+  Fable    <count> tasks   <input_sum> input  /  <output_sum> output   →  $<cost_sum>
 
 Total spent:                                                              $<total>
 Baseline (all-Opus):                                                      $<baseline>
 Savings:                                                                  $<savings>  (<pct>%)
 
 Quality flags:
-  Escalations:    <count> (<top reason>)
-  User overrides: <count>
-  Regressions:    <count if logged, else "—">
+  Reclassifications: <count> (<top reason>)
+  User overrides:    <count>
+  Regressions:       <count if logged, else "—">
 
 Pricing snapshot:
-  Opus 4.7    $5 / $25 per 1M tokens
+  Fable 5     $10 / $50 per 1M tokens
+  Opus 4.7    $5 / $25
   Sonnet 4.6  $3 / $15
   Haiku 4.5   $1 / $5
 ```
+
+**Per-model row note:** omit any model row entirely if `<count>` is 0 — Fable's row will legitimately be absent in most sessions. When a Fable row does appear, its `cost_sum` counts toward "Total spent" as normal, but since `cost_baseline_usd` for a Planning task is still priced at Opus, that task's individual `savings_usd` is negative. Don't clamp negative savings to zero; let the total "Savings" line reflect the real (possibly reduced) net.
 
 6. **Format numbers cleanly:**
    - Token counts: `1.2M`, `480K`, `28.4k`

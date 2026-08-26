@@ -44,6 +44,8 @@ Pricing snapshot (used for this session, May 2026):
   Haiku 4.5:   $1.00 input  / $5.00 output   per 1M tokens
 ```
 
+**Note:** this session predates the Fable/Planning tier (added August 2026) — it ran under the original 3-tier taxonomy, so "architecture" and "security-review" landed on Opus rather than being split into today's Review (Opus) vs. Planning (Fable) lanes. Real historical numbers, left as originally logged rather than retrofitted to the current taxonomy.
+
 ## What this session shows
 
 - **79.4% real savings.** Not a marketing number — the NDJSON log backs every line.

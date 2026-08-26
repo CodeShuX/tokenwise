@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+- **Fable 5 as the Planning tier** — routing is now a symmetric 4-way classification by task type: Mechanical→Haiku, Execution→Sonnet, Review→Opus, Planning→Fable ($10/$50 per 1M tokens, 2× Opus). All four lanes route automatically with no per-task confirmation.
+- One-time install-time pricing notice for Fable, printed at the end of `/tokenwise:install` — replaces the old per-task `[Y/n]` gate.
+- `/tokenwise:ab` now accepts `fable` in `--tiers` (still opt-in, alongside `opus`).
+
+### Changed
+- `task_class` values renamed to `mechanical|execution|review|planning`; `model_used` accepts `fable-5`.
+- Escalation replaced by **reclassification**: a misrouted subagent never re-routes itself — it returns to the parent, which reclassifies directly to the correct lane (any lane, one hop, at most once). `escalation_reason` values are `needs-mechanical|needs-execution|needs-review|needs-planning|ambiguous-spec|insufficient-capability`. Subagents still never self-escalate; max spawn depth 2 and the >30k-token input bump (which stops at Opus) are retained.
+- Planning (Fable) log lines carry negative `savings_usd` by design (baseline stays pinned to Opus) — `/tokenwise:report` and `/tokenwise:summary` render it as-is, not clamped to zero.
+- SPEC.md's "Budget cap" scope item (in-scope since v0.1.0, never actually specified) is now explicitly deferred to v0.2; the one-time install notice + per-tier report breakdown is the v0.1 answer.
+
 ## [0.1.1] — 2026-05-11
 
 ### Fixed
