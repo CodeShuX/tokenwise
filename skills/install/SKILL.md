@@ -35,7 +35,7 @@ Do these checks (use Read and Bash tools):
 3. **Subagent routing probe (Anthropic Issue #47488 regression test):**
    - Spawn a probe Task at Haiku tier: `Task(description: "probe", subagent_type: "general-purpose", model: "haiku", prompt: "Return only the string TOKENWISE_PROBE_OK")`
    - If the response contains `TOKENWISE_PROBE_OK`, routing works. If not, mark probe as FAILED.
-   - Note: if your Task tool doesn't support `model:`, mark as "routing probe: unverifiable on this build" and proceed.
+   - Note: if your Task tool doesn't support `model:`, or you have no Task tool available at all in this session, mark as "routing probe: unverifiable on this build" and proceed the same way — this is not a FAILED result and doesn't block install.
 
 4. **Env-var probe (Anthropic Issue #36381):**
    - Run `bash -c 'CLAUDE_AUTOCOMPACT_PCT_OVERRIDE=80 env | grep CLAUDE_AUTOCOMPACT'`
@@ -77,7 +77,7 @@ If neither exists, ask: "No CLAUDE.md found. Create one at: [1] global [2] proje
 
 ### Compose the routing block
 
-This is the TokenWise routing block. It is inserted between `<!-- BEGIN TokenWise -->` and `<!-- END TokenWise -->` markers.
+This is the TokenWise routing block. It is inserted between `<!-- BEGIN TokenWise -->` and `<!-- END TokenWise -->` markers. If the target file already contains these markers, replace everything between them in place. Otherwise, append the whole block to the end of the file, preceded by one blank line — don't try to find a "natural" insertion point among existing headings.
 
 ```markdown
 <!-- BEGIN TokenWise — routing rules. Managed by /tokenwise:install. Do not edit by hand. -->
@@ -155,13 +155,18 @@ Pricing (Aug 2026, per 1M tokens, input/output):
 }
 ```
 
-(Merge into existing `env` object if present.)
+(Merge into existing `env` object if present. If the existing `env` object has other keys, keep them — only add/update the two TokenWise keys above.)
 
 ### Guided mode flow
 
 For each file to modify:
 
-1. Print a unified diff of the proposed change
+1. Print a unified diff of the proposed change. When diffing `settings.json`,
+   elide the value of any pre-existing `env` key that looks like a secret
+   (name contains `KEY`, `TOKEN`, `SECRET`, or the value itself matches a
+   common credential shape) — show `"<redacted — existing value unchanged>"`
+   in its place. Never print a real secret value into a diff, even one you
+   are not modifying.
 2. Ask `[Y/n] Apply this change?`
 3. If Y:
    - Compute timestamp: `date +%Y%m%d-%H%M%S`
